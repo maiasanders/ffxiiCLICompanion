@@ -1,6 +1,6 @@
 public class database {
 
-    public static String[] loadData() {
+    public static String[] rareGameLoadData() {
         return new String[]{
             "Aspidochelon|293|5|Cerobi Steppe|Feddick River|42|Adamantine Trophy|Scarletite||https://finalfantasy.fandom.com/wiki/Aspidochelon_(Final_Fantasy_XII)",
 
@@ -19,6 +19,14 @@ public class database {
             "Vishno|300|2|The Pharos|First Ascent (Wellspring Ravel - 4th Flight)|57|Solid Stone, Ribbon|Orichalcum||https://finalfantasy.fandom.com/wiki/Vishno",
 
             "Gavial|301|4|Garamsythe Waterway|No. 10 Channel|46|Fur-scaled Trophy|Antarctic Wind||https://finalfantasy.fandom.com/wiki/Gavial_(Final_Fantasy_XII)"
+        };
+    }
+
+    public static String[] miscSiQuLoadData(){
+        return new String[]{
+                "Find lost cockatrices",
+                "Bhujerban Madhu",
+                "Patient in the Desert"
         };
     }
 
