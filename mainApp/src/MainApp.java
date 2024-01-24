@@ -9,6 +9,7 @@ public class MainApp {
         return keyboard.nextLine();
     };
 
+    // rare game data lists
     public static List<String> rGNames = new ArrayList<>();
     public static List<Integer> rGEntryNumbers = new ArrayList<>();
     public static List<Integer> rGRarityStars = new ArrayList<>();
@@ -20,6 +21,16 @@ public class MainApp {
     private static List<String> rgPoachItems = new ArrayList<>();
     private static List<String> rgWikiPages = new ArrayList<>();
     private static List<Boolean> rgIsTrophy = new ArrayList<>();
+
+    // esper data lists
+    private static List<String> esperNames = new ArrayList<>();
+    private static List<String> esperLocationsMain = new ArrayList<>();
+    private static List<String> esperLocationZones = new ArrayList<>();
+    private static List<Integer> esperLevels = new ArrayList<>();
+    private static List<String> esperElements = new ArrayList<>();
+    private static List<String> esperSteals = new ArrayList<>();
+    private static List<String> esperWikis = new ArrayList<>();
+
     public static void main(String[] args) {
         MainApp app = new MainApp();
         MainApp.load();
@@ -49,23 +60,32 @@ public class MainApp {
                     int enemySubMenuSelect = Integer.parseInt(input());
                     //Espers
                     if (enemySubMenuSelect == 1){
-                        //TODO add espers
-                        underConstructionMsg();
+                        printEsperList();
+                        promptReturnMainMenu();
+                        if (input().isEmpty()) continue;
                     } else if (enemySubMenuSelect == 2){
                     //Rare game
                         printRgList();
+                        promptReturnMainMenu();
+                        if (input().isEmpty()) continue;
                     } else if (enemySubMenuSelect == 3) {
                         // TODO hunts
                         underConstructionMsg();
+                        promptReturnMainMenu();
+                        if (input().isEmpty()) continue;
                     } else if (enemySubMenuSelect == 4){
                         // TODO optional bosses
                         underConstructionMsg();
+                        promptReturnMainMenu();
+                        if (input().isEmpty()) continue;
                     }
 
                 // Misc. side quest
                 } else if (listsMenuSelect == 2){
                     // TODO add side quest logic & data
                     underConstructionMsg();
+                    promptReturnMainMenu();
+                    if (input().isEmpty()) continue;
                 // items
                 } else if (listsMenuSelect == 3){
 
@@ -79,7 +99,7 @@ public class MainApp {
                         // other items
 
                 } else if (listsMenuSelect == 0){
-                    break;
+                    continue;
                 }
 
             // redirect to search
@@ -93,13 +113,19 @@ public class MainApp {
                     printInputPrompt();
                     int enemySelect = Integer.parseInt(input());
                     if (enemySelect == 1){
-                        //TODO Espers
-                        underConstructionMsg();
+                        // Espers
+                        String esperSearched = searchQuery("Optional Esper");
+                        List<Integer> indexes = filterByString(esperNames, esperSearched);
+                        printEsperSearch(indexes);
+                        promptReturnMainMenu();
+                        if (input().isEmpty()) continue;
                     } else if (enemySelect == 2){
-                        //Rare game
-                        String rgSearched = searchQuery("Rage Game");
+                        // Rare game
+                        String rgSearched = searchQuery("Rare Game");
                         List<Integer> indexes = filterByString(rGNames, rgSearched);
                         printRgSearch(indexes);
+                        promptReturnMainMenu();
+                        if (input().isEmpty()) continue;
                     }
                     // hunts
                     // optional bosses
@@ -146,7 +172,12 @@ public class MainApp {
 
     }
 
+    // Load functions
     private static void load(){
+        loadRg();
+        loadEspers();
+    }
+    private static void loadRg(){
         String[] raGaData = database.rareGameLoadData();
         for (String entry : raGaData) {
             String[] entryFields = entry.split("\\|");
@@ -162,6 +193,20 @@ public class MainApp {
             rgPoachItems.add(entryFields[8]);
             rgWikiPages.add(entryFields[9]);
             rgIsTrophy.add(entryFields[6].contains("Trophy"));
+        }
+    }
+
+    private static void loadEspers(){
+        String[] esperData = database.esperLoadData();
+        for (String entry : esperData){
+            String[] entryData = entry.split("\\|");
+            esperNames.add(entryData[0]);
+            esperLocationsMain.add(entryData[1]);
+            esperLocationZones.add(entryData[2]);
+            esperLevels.add(Integer.parseInt(entryData[3]));
+            esperElements.add(entryData[4]);
+            esperSteals.add(entryData[5]);
+            esperWikis.add(entryData[6]);
         }
     }
 
@@ -218,6 +263,10 @@ public class MainApp {
         System.out.print("Please make a selection: ");
     }
 
+    private static void promptReturnMainMenu(){
+        System.out.println("\nPlease press ENTER to return to main menu.");
+    }
+
     private static void underConstructionMsg(){
         System.out.println("This section is currently under construction.");
         System.out.println("Check back soon!");
@@ -237,6 +286,19 @@ public class MainApp {
             printRgEntry(i);
         }
     }
+
+    private static void printEsperList(){
+        for (int i = 0; i < esperNames.size(); i++){
+            printEsperEntry(i);
+        }
+    }
+    private static void printEsperSearch(List<Integer> indexes){
+        for (int ind : indexes) {
+            printEsperEntry(ind);
+        }
+    }
+
+    // functions to print specific entry types
     private static void printRgEntry(int ind){
         if (ind > 0) System.out.println("--------------------------------------");
         System.out.println(STR."Name: \{rGNames.get(ind)}");
@@ -258,6 +320,15 @@ public class MainApp {
         return output;
     }
 
+    private static void printEsperEntry(int ind){
+        if (ind > 0) System.out.println("--------------------------------------");
+        System.out.println(STR."Name: \{esperNames.get(ind)}");
+        System.out.println(STR."Location: \{esperLocationsMain.get(ind)} - \{esperLocationZones.get(ind)}");
+        System.out.println(STR."Level: \{esperLevels.get(ind)}\tElement: \{esperElements.get(ind)}");
+        System.out.println(STR."Can steal \{esperSteals.get(ind)}");
+        System.out.println(STR."Main wiki page: \{esperWikis.get(ind)}");
+    }
+
     // filter functions
 
     private static String searchQuery(String category){
@@ -274,7 +345,6 @@ public class MainApp {
         }
         return indexes;
     }
-
 
 
 
