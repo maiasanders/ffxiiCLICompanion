@@ -8,7 +8,9 @@ public class Prompts {
     private static final String returnMainMenu = "Please press ENTER to return to main menu.";
 
 
-    private static String underConstructionMsg = "This section is currently under construction.\nCheck back soon!\nPress 0 to return to main.Main Menu.";
+    private static String underConstructionMsg = "This section is currently under construction.\nCheck back soon!\nPress 0 to return to Main Menu.";
+
+    private static final String searchPrompt = "What are you looking for? ";
 
     public static void printInputPrompt() {
         System.out.println(inputPrompt);
@@ -20,5 +22,9 @@ public class Prompts {
 
     public static void printUnderConstructionMsg() {
         System.out.println(underConstructionMsg);
+    }
+
+    public static String getSearchPrompt() {
+        return searchPrompt;
     }
 }

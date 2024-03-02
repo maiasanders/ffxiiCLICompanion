@@ -1,7 +1,6 @@
 package tests;
 
-import main.Hunt;
-import main.HuntData;
+import main.entryTypes.Hunt;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.Assert;
@@ -14,7 +13,7 @@ public class HuntTest {
         String[] testArray = new String[]{"steal", "Items"};
 
         // Act
-        Hunt hunt = new Hunt("Name", "Location Main", "Zone", 1, "steal, Items", "site.com", "title", 1, "guy", "guy's town", "guy's house");
+        Hunt hunt = new Hunt("Name", 1, "Location Main", "Zone", 1, "steal, Items", "site.com", "title", 1, "guy", "guy's town", "guy's house");
 
         // Assert
         Assert.assertEquals("Name", hunt.getName());
@@ -33,7 +32,7 @@ public class HuntTest {
     Hunt hunt;
     @Before
     public void setTestHunt() {
-        hunt = new Hunt("Name", "Location Main", "Zone", 1, "steal, Items", "site.com", "title", 1, "guy", "guy's town", "guy's house");
+        hunt = new Hunt("Name", 1, "Location Main", "Zone", 1, "steal, Items", "site.com", "title", 1, "guy", "guy's town", "guy's house");
     }
 
     @Test
@@ -47,13 +46,13 @@ public class HuntTest {
     public void getFormattedRank_returns_appropriate_results() {
         // Arrange
         Hunt[] hunts = new Hunt[]{
-                new Hunt ("Name", "Location Main", "Zone", 1, "steal, Items", "site.com", "title", 4, "guy", "guy's town", "guy's house"),
+                new Hunt ("Name",2, "Location Main", "Zone", 1, "steal, Items", "site.com", "title", 4, "guy", "guy's town", "guy's house"),
 
-            new Hunt("Name", "Location Main", "Zone", 1, "steal, Items", "site.com", "title", 5, "guy", "guy's town", "guy's house"),
+            new Hunt("Name", 3, "Location Main", "Zone", 1, "steal, Items", "site.com", "title", 5, "guy", "guy's town", "guy's house"),
 
-                new Hunt("Name", "Location Main", "Zone", 6, "steal, Items", "site.com", "title", 6, "guy", "guy's town", "guy's house"),
+                new Hunt("Name", 4, "Location Main", "Zone", 6, "steal, Items", "site.com", "title", 6, "guy", "guy's town", "guy's house"),
 
-                new Hunt("Name", "Location Main", "Zone", 1, "steal, Items", "site.com", "title", 8, "guy", "guy's town", "guy's house")
+                new Hunt("Name", 5, "Location Main", "Zone", 1, "steal, Items", "site.com", "title", 8, "guy", "guy's town", "guy's house")
         };
 
         String[] expectedReturn = new String[]{"IV", "V", "VI", "VIII"};

@@ -10,7 +10,7 @@ public class MenuInterfaces {
             "1. Enemies",
             "2. Miscellaneous Side Quests",
             "3. Items",
-            "0. Return to main.Main Menu"
+            "0. Return to Main Menu"
     };
     private static final String[] searchMenu = new String[]{
             "Search Options",
@@ -20,7 +20,7 @@ public class MenuInterfaces {
             "3. Items",
             "4. Search by location",
             "5. Search by level range",
-            "0. Return to main.Main Menu"
+            "0. Return to Main Menu"
     };
     private static final String[] enemiesSubMenu = new String[]{
             "Enemies",
@@ -29,7 +29,7 @@ public class MenuInterfaces {
             "2. Rare Game",
             "3. Hunts",
             "4. Optional Bosses",
-            "0. main.Main Menu"
+            "0. Main Menu"
     };
 
     private static String[] checkOffMenu = new String[]{
@@ -38,7 +38,7 @@ public class MenuInterfaces {
             "1. Enemies",
             "2. Miscellaneous Side Quests",
             "3. Items",
-            "4. Return to main.Main Menu"
+            "4. Return to Main Menu"
     };
 
 

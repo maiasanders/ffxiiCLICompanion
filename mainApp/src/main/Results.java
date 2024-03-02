@@ -1,5 +1,7 @@
 package main;
 
+import main.entryTypes.*;
+
 import java.util.List;
 
 public class Results {
