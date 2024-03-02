@@ -84,47 +84,26 @@ public class App {
 
                     //Espers
                     if (enemySubMenuSelect == 1){
-                        for (Checkable entry : entries) {
-                            if (entry.getEntryNum() >= ESPER_START_ENTRY_NUM && entry.getEntryNum() <= ESPER_END_ENTRY_NUM) {
-                                System.out.println(entry);
-                                Results.printBreakLine();
-                            }
-                        }
+
+                        printLists(ESPER_START_ENTRY_NUM, ESPER_END_ENTRY_NUM, false);
                         Prompts.printReturnMainMenu();
                         input();
 
                     } else if (enemySubMenuSelect == 2){
                         // Rare game filter
-                        for (Checkable entry : entries) {
-                            if (entry.getEntryNum() >= RARE_GAME_START_ENTRY_NUM && entry.getEntryNum() <= RARE_GAME_END_ENTRY_NUM) {
-                                System.out.println(entry);
-                                Results.printBreakLine();
-                            }
-                        }
+                        printLists(RARE_GAME_START_ENTRY_NUM, RARE_GAME_END_ENTRY_NUM, false);
                         Prompts.printReturnMainMenu();
                         input();
 
                     } else if (enemySubMenuSelect == 3) {
-                        // Hunts/marks, excludes Phoenix even though filed under elite marks in bestiary
-                        for (Checkable entry : entries) {
-                            int entryNum = entry.getEntryNum();
-                            if (entryNum >= HUNT_START_ENTRY_NUM && entryNum <= HUNT_END_ENTRY_NUM && entryNum != PHOENIX_ENTRY_NUM) {
-                                System.out.println(entry);
-                                Results.printBreakLine();
-                            }
-                        }
+                        // Hunts, doesn't include phoenix
+                        printLists(HUNT_START_ENTRY_NUM, HUNT_END_ENTRY_NUM, false);
                         Prompts.printReturnMainMenu();
                         input();
 
                     } else if (enemySubMenuSelect == 4){
                         // Optional Bosses, includes Phoenix
-                        for (Checkable entry : entries) {
-                            int entryNum = entry.getEntryNum();
-                            if ((entryNum >= BOSS_START_ENTRY_NUM && entryNum <= BOSS_END_ENTRY_NUM) || entryNum == PHOENIX_ENTRY_NUM) {
-                                System.out.println(entry);
-                                Results.printBreakLine();
-                            }
-                        }
+                        printLists(BOSS_START_ENTRY_NUM, BOSS_END_ENTRY_NUM, true);
                         Prompts.printReturnMainMenu();
                         input();
                     }
@@ -160,14 +139,19 @@ public class App {
                 if (searchSelect == 1){
                     MenuInterfaces.printMenu(MenuInterfaces.getEnemiesSubMenu());
                     Prompts.printInputPrompt();
-                    int enemySelect = Integer.parseInt(input());
+                    int enemySelect = numSelection(4);
                     if (enemySelect == 1){
                         // Espers
-                        String esperSearched = searchFunctions.searchQuery("Esper");
-                        List<Integer> indexes = EsperData.filterEsperByName(esperSearched);
-                        Results.printEsperSearch(indexes);
+                        String esperSearched = input();
+//                        List<Integer> indexes = EsperData.filterEsperByName(esperSearched);
+                        for (Checkable entry : entries) {
+                            if (entry.getEntryNum() >= ESPER_START_ENTRY_NUM && entry.getEntryNum() <= ESPER_END_ENTRY_NUM && entry.getTitle().contains(esperSearched)) {
+                                System.out.println(entry);
+                                Results.printBreakLine();
+                            }
+                        };
                         Prompts.printReturnMainMenu();
-                        if (input().isEmpty()) continue;
+                        input();
                     } else if (enemySelect == 2){
                         // Rare game
                         String rgSearched = searchFunctions.searchQuery("Rare Game");
@@ -336,6 +320,24 @@ public class App {
             }
         }
         return selection;
+    }
+
+    private void printLists(int startInd, int endInd, boolean includePhoenix) {
+        for (Checkable entry : entries) {
+            int entryNum = entry.getEntryNum();
+            if (includePhoenix) {
+                if ( (entryNum >= startInd && entryNum <= endInd) || entryNum == PHOENIX_ENTRY_NUM ) {
+                    System.out.println(entry);
+                    Results.printBreakLine();
+                }
+
+            } else {
+                if (entryNum >= startInd && entryNum <= endInd && entryNum != PHOENIX_ENTRY_NUM) {
+                    System.out.println(entry);
+                    Results.printBreakLine();
+                }
+            }
+        }
     }
 
 

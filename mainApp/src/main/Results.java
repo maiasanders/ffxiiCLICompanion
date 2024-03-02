@@ -32,6 +32,15 @@ public class Results {
             esper.toString();
         }
     }
+
+//    public static void printLists(int startInd, int endInd, boolean includePhoenix) {
+//        for (Checkable entry : entries) {
+//            if (entry.getEntryNum() >= RARE_GAME_START_ENTRY_NUM && entry.getEntryNum() <= RARE_GAME_END_ENTRY_NUM) {
+//                System.out.println(entry);
+//                Results.printBreakLine();
+//            }
+//        }
+//    }
     public static void printBreakLine(){
         System.out.println("--------------------------------------");
     }

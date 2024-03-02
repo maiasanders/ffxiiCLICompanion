@@ -62,4 +62,8 @@ public abstract class Enemy implements Checkable {
         checkedOff = true;
     }
 
+    public String getTitle() {
+        return this.name;
+    }
+
 }
