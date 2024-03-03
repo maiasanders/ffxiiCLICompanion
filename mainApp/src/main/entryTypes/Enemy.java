@@ -65,5 +65,10 @@ public abstract class Enemy implements Checkable {
     public String getTitle() {
         return this.name;
     }
+    public String getLocation() {
+        return this.locationMain;
+    }
+
+
 
 }

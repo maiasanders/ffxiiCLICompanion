@@ -1,6 +1,7 @@
 package main;
 
 import main.entryTypes.*;
+import main.util.DataTransformation;
 import main.util.InvalidInputException;
 
 import java.io.File;
@@ -12,16 +13,16 @@ import java.util.Scanner;
 
 public class App {
 
-    private final int HUNT_START_ENTRY_NUM = 212;
-    private final int HUNT_END_ENTRY_NUM = 261;
-    private final int ESPER_START_ENTRY_NUM = 262;
-    private final int ESPER_END_ENTRY_NUM = 274;
-    private final int BOSS_START_ENTRY_NUM = 275;
-    private final int BOSS_END_ENTRY_NUM = 292;
-    private final int RARE_GAME_START_ENTRY_NUM = 293;
-    private final int RARE_GAME_END_ENTRY_NUM = 372;
-    private final int PHOENIX_ENTRY_NUM = 259;
-    private List<Checkable> entries;
+    final int HUNT_START_ENTRY_NUM = 212;
+    final int HUNT_END_ENTRY_NUM = 261;
+    final int ESPER_START_ENTRY_NUM = 262;
+    final int ESPER_END_ENTRY_NUM = 274;
+    final int BOSS_START_ENTRY_NUM = 275;
+    final int BOSS_END_ENTRY_NUM = 292;
+    final int RARE_GAME_START_ENTRY_NUM = 293;
+    final int RARE_GAME_END_ENTRY_NUM = 372;
+    final int PHOENIX_ENTRY_NUM = 259;
+    List<Checkable> entries;
     public void main(String[] args) {
         App app = new App();
         app.load();
@@ -142,34 +143,37 @@ public class App {
                     int enemySelect = numSelection(4);
                     if (enemySelect == 1){
                         // Espers
+                        System.out.println(Prompts.getSearchPrompt());
                         String esperSearched = input();
-//                        List<Integer> indexes = EsperData.filterEsperByName(esperSearched);
-                        for (Checkable entry : entries) {
-                            if (entry.getEntryNum() >= ESPER_START_ENTRY_NUM && entry.getEntryNum() <= ESPER_END_ENTRY_NUM && entry.getTitle().contains(esperSearched)) {
-                                System.out.println(entry);
-                                Results.printBreakLine();
-                            }
-                        };
+                        searchByTitle(esperSearched, ESPER_START_ENTRY_NUM, ESPER_END_ENTRY_NUM, false);
                         Prompts.printReturnMainMenu();
                         input();
                     } else if (enemySelect == 2){
                         // Rare game
-                        String rgSearched = searchFunctions.searchQuery("Rare Game");
-                        // Refactor w/ inheritance
-//                        List<Integer> indexes = RareGameData.filterRgByName(rgSearched);
-                        List<Integer> indexes1 = SearchFunctions.filterByName(RareGameData.rareGameList, rgSearched);
-//                        Results.printRgSearch(indexes);
+                        System.out.println(Prompts.getSearchPrompt());
+                        String rgSearched = input();
+                        searchByTitle(rgSearched, RARE_GAME_START_ENTRY_NUM, RARE_GAME_END_ENTRY_NUM, false);
                         Prompts.printReturnMainMenu();
-                        if (input().isEmpty()) continue;
-                    }
+                        input();
+                    } else if (enemySelect == 3) {
                     // hunts
+                        System.out.println(Prompts.getSearchPrompt());
+                        String huntSearched = input();
+                        searchByTitle(huntSearched, HUNT_START_ENTRY_NUM, HUNT_END_ENTRY_NUM, false);
+                        Prompts.printReturnMainMenu();
+                        input();
+                    } else if (enemySelect == 4) {
                     // optional bosses
+                        System.out.println(Prompts.getSearchPrompt());
+                        String bossSearched = input();
+                        searchByTitle(bossSearched, BOSS_START_ENTRY_NUM, BOSS_END_ENTRY_NUM, true);
+                    }
                 } else if (searchSelect == 2) {
                     // Misc. side quest
                     // TODO sidequests search
                     Prompts.printUnderConstructionMsg();
                 } else if (searchSelect == 3) {
-                    //TODO
+                    //TODO add items search
                     Prompts.printUnderConstructionMsg();
                     // items
                         //unique treasures
@@ -180,13 +184,40 @@ public class App {
                             // other items
 
                 } else if (searchSelect == 4) {
-                    // TODO search by location
-                    System.out.println(Prompts.getSearchPrompt());
 
-                    Prompts.printUnderConstructionMsg();
+                    System.out.println(Prompts.getSearchPrompt());
+                    String locationSearched = input();
+                    searchByLocation(locationSearched);
                 } else if (searchSelect == 5) {
-                    // TODO search by level range
-                    Prompts.printUnderConstructionMsg();
+                    System.out.println("Please enter the minimum level (1-99)");
+                    int minLevel;
+                    while (true) {
+                        try {
+                            minLevel = Integer.parseInt(input());
+                            if (minLevel < 1 || minLevel > 99) {
+                                throw new InvalidInputException();
+                            }
+                            break;
+                        } catch (Exception e) {
+                            System.out.println("**Please enter a valid number");
+                        }
+                    }
+                    System.out.println("Please enter the maximum level (1-99)");
+                    int maxLevel;
+                    while (true) {
+                        try {
+                            maxLevel = Integer.parseInt(input());
+                            if (maxLevel < 1 || maxLevel > 99) {
+                                throw new InvalidInputException();
+                            }
+                            break;
+                        } catch (Exception e) {
+                            System.out.println("**Please enter a valid number");
+                        }
+                    }
+                    searchByLevels(minLevel, maxLevel);
+                    Prompts.printReturnMainMenu();
+                    input();
                 } else if (searchSelect == 0) {
                     break;
                 }
@@ -216,7 +247,7 @@ public class App {
         try {
             List<String> huntsData = InputOutput.readFile("Resources/data/hunts.dat");
             for (String hunt : huntsData) {
-                entries.add(getHunt(hunt));
+                entries.add(DataTransformation.getHunt(hunt));
             }
         } catch (FileNotFoundException e) {
             System.err.println("Trouble loading Hunt data");;
@@ -224,7 +255,7 @@ public class App {
         try {
             List<String> esperData = InputOutput.readFile("Resources/data/espers.dat");
             for (String esper : esperData) {
-                entries.add(getEsper(esper));
+                entries.add(DataTransformation.getEsper(esper));
             }
         } catch (FileNotFoundException e) {
             System.err.println("Trouble loading Esper data");
@@ -232,7 +263,7 @@ public class App {
         try {
             List<String> rareGameData = InputOutput.readFile("Resources/data/rareGame.dat");
             for (String rareGame : rareGameData) {
-                entries.add(getRareGame(rareGame));
+                entries.add(DataTransformation.getRareGame(rareGame));
             }
         } catch (FileNotFoundException e) {
             System.err.println("Trouble reading Rare Game data");
@@ -240,72 +271,11 @@ public class App {
         try {
             List<String> optionalBossData = InputOutput.readFile("Resources/data/optionalBosses.dat");
             for (String boss : optionalBossData) {
-                entries.add(getOptionalBoss(boss));
+                entries.add(DataTransformation.getOptionalBoss(boss));
             }
         } catch (FileNotFoundException e) {
             System.err.println("Trouble loading Optional Boss data");
         }
-    }
-
-    private static Hunt getHunt(String hunt) {
-        String[] entryData = hunt.split("\\|");
-        return new Hunt(
-                entryData[0],
-                Integer.parseInt(entryData[1]),
-                entryData[2],
-                entryData[3],
-                Integer.parseInt(entryData[4]),
-                entryData[5],
-                entryData[6],
-                entryData[7],
-                Integer.parseInt(entryData[8]),
-                entryData[9],
-                entryData[10],
-                entryData[11]
-        );
-    }
-    private static Esper getEsper(String esper) {
-        String[] entryData = esper.split("\\|");
-        return new Esper(
-                entryData[0],
-                Integer.parseInt(entryData[1]),
-                entryData[2],
-                entryData[3],
-                Integer.parseInt(entryData[4]),
-                entryData[5],
-                entryData[6],
-                entryData[7]
-        );
-    }
-    private static RareGame getRareGame(String rareGame) {
-        String[] entryFields = rareGame.split("\\|");
-        return new RareGame(
-                entryFields[0],
-                Integer.parseInt(entryFields[1]),
-                Integer.parseInt(entryFields[2]),
-                entryFields[3],
-                entryFields[4],
-                Integer.parseInt(entryFields[5]),
-                entryFields[6],
-                entryFields[7],
-                entryFields[8],
-                entryFields[9]
-        );
-
-    }
-    private static OptionalBoss getOptionalBoss(String optionalBoss) {
-        String[] bossData = optionalBoss.split("\\|");
-        return new OptionalBoss(
-                bossData[0],
-                Integer.parseInt(bossData[1]),
-                bossData[2],
-                bossData[3],
-                Integer.parseInt(bossData[4]),
-                bossData[5],
-                bossData[6],
-                bossData[7],
-                bossData[8]
-        );
     }
 
     private int numSelection(int max) {
@@ -337,6 +307,73 @@ public class App {
                     Results.printBreakLine();
                 }
             }
+        }
+    }
+
+    private void searchByTitle(String searchQuery, int startInd, int endInd, boolean includePhoenix) {
+        boolean hasResults = false;
+        for (Checkable entry : entries) {
+            int entryNum = entry.getEntryNum();
+            if (includePhoenix) {
+                if ( ((entryNum >= startInd && entryNum <= endInd) || entryNum == PHOENIX_ENTRY_NUM ) && entry.getTitle().toLowerCase().contains(searchQuery.toLowerCase())) {
+                    hasResults = true;
+                    System.out.println(entry);
+                    Results.printBreakLine();
+                }
+
+            } else {
+                if (entryNum >= startInd && entryNum <= endInd && entryNum != PHOENIX_ENTRY_NUM && entry.getTitle().toLowerCase().contains(searchQuery.toLowerCase())) {
+                    hasResults = true;
+                    System.out.println(entry);
+                    Results.printBreakLine();
+                }
+            }
+        }
+
+        if (!hasResults) {
+            System.out.println("Sorry, nothing matches your search");
+        }
+    }
+
+    private void searchByTitle(String searchQuery) {
+        boolean hasResults = false;
+        for (Checkable entry : entries) {
+            if (entry.getTitle().contains(searchQuery)) {
+                hasResults = true;
+                System.out.println(entry);
+                Results.printBreakLine();
+            }
+        }
+        if (!hasResults) {
+            System.out.println("Sorry, nothing matches your search");
+        }
+    }
+
+    private void searchByLocation(String search) {
+        boolean hasResults = false;
+        for (Checkable entry : entries) {
+            if (entry.getLocation().toLowerCase().contains(search.toLowerCase())) {
+                hasResults = true;
+                System.out.println(entry);
+                Results.printBreakLine();
+            }
+        }
+        if (!hasResults) {
+            System.out.println("Sorry, nothing matches your search");
+        }
+    }
+
+    private void searchByLevels(int minLevel, int maxLevel) {
+        boolean hasResults = false;
+        for (Checkable entry : entries) {
+            if (entry instanceof Enemy && ((Enemy) entry).getLevel() >= minLevel && ((Enemy) entry).getLevel() <= maxLevel) {
+                hasResults = true;
+                System.out.println(entry);
+                Results.printBreakLine();
+            }
+        }
+        if (!hasResults) {
+            System.out.println("Sorry, nothing matches your search");
         }
     }
 
