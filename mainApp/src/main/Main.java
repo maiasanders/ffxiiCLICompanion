@@ -5,8 +5,8 @@ public class Main {
 //        MainApp app = new MainApp();
         App app = new App();
         app.load();
+        app.loadSaveFiles();
         app.run();
-
     }
 
 }

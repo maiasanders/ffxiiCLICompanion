@@ -27,4 +27,8 @@ public class Prompts {
     public static String getSearchPrompt() {
         return searchPrompt;
     }
+
+    public static void printBreakLine(){
+        System.out.println("--------------------------------------");
+    }
 }

@@ -6,10 +6,7 @@ import main.util.InvalidInputException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class App {
 
@@ -22,43 +19,83 @@ public class App {
     final int RARE_GAME_START_ENTRY_NUM = 293;
     final int RARE_GAME_END_ENTRY_NUM = 372;
     final int PHOENIX_ENTRY_NUM = 259;
-    List<Checkable> entries;
-    public void main(String[] args) {
-        App app = new App();
-        app.load();
-        app.run();
-    }
+    Map<Integer, Checkable> entries;
+    Map<Integer, Boolean> checkStatus;
+    File saveDir = new File("Resources/saves");
+    private Scanner keyboard = new Scanner(System.in);
 
-    SearchFunctions searchFunctions = new SearchFunctions();
-    public static Scanner keyboard = new Scanner(System.in);
-    public static String input(){
+    private String input(){
         return keyboard.nextLine();
     }
-    File saveDir = new File("Resources/saves");
 
-
-    public void loadSaveFiles() {
+    public File loadSaveFiles() {
         if (saveDir.exists() && saveDir.listFiles().length > 0) {
+
 
             System.out.println(Arrays.toString(saveDir.listFiles()));
 
             System.out.println("Would you like to start a new save? (Y/N)");
             String newSaveSelect = input();
+            File[] saveFiles = saveDir.listFiles();
 
-            if (newSaveSelect.equals("N")) {
-                System.out.println("Please input the number of the save you wish to load: ");
-                int fileNum = Integer.parseInt(input());
+            while (true){
+                try {
+                    if (newSaveSelect.equalsIgnoreCase("N")) {
+
+                            System.out.println("Please input the number of the save you wish to load (use 2 digit number): ");
+                            int fileNum = Integer.parseInt(input());
+                            File selectedFile;
+                            selectedFile = new File("Resources/saves/save" + fileNum + ".csv");
+                            if (selectedFile.exists()) {
+                                try (Scanner file = new Scanner(selectedFile)) {
+                                    if (!file.hasNextLine()) {
+                                        throw new FileNotFoundException();
+                                    } else {
+                                        while (file.hasNextLine()) {
+                                            String line = file.nextLine();
+                                            if (line.endsWith("true")) {
+                                                int num = Integer.parseInt(line.substring(0, line.length() - 4));
+                                                checkStatus.put(num, true);
+                                            }
+                                        }
+                                        return selectedFile;
+                                    }
+                                } catch (FileNotFoundException e) {
+                                    System.err.println("Trouble reading file, try again");
+                                }
+
+                        }
+                    } else if (newSaveSelect.equalsIgnoreCase("Y")) {
+                        return new File(createNewSave());
+                    } else {
+                        throw new InvalidInputException();
+                    }
+                } catch (InvalidInputException e) {
+                    System.err.println("Please input \"Y\" or \"N\"");
+                }
             }
-        } else if (saveDir.exists()) {
-            createNewSave();
         } else {
-            saveDir.mkdir();
+            if (saveDir.exists()) saveDir.mkdir();
+            return new File(createNewSave());
         }
     }
-    void createNewSave() {
-        if (saveDir.listFiles().length == 0) {
-
+    String createNewSave() {
+        if (saveDir.listFiles() == null || saveDir.listFiles().length == 0) {
+            return "Resources/saves/save01.csv";
+        } else {
+            File[] saveFiles = saveDir.listFiles();
+            assert saveFiles != null;
+            String lastFile = saveFiles[saveFiles.length - 1].getName();
+            int fileNum = Integer.parseInt(lastFile.substring(4, 6)) + 1;
+            return "Resources/saves/save" + fileNum +".csv";
         }
+    }
+    private void writeSave(String fileName) throws FileNotFoundException {
+        List<String> data = new ArrayList<>();
+        for (Map.Entry<Integer, Boolean> entry : checkStatus.entrySet()) {
+            data.add(entry.getKey() + "," + entry.getValue());
+        }
+        InputOutput.writeFile(data, fileName, false);
     }
 
     public void run() {
@@ -241,13 +278,17 @@ public class App {
 
 
     // Loads data from appropriate files and adds to entries list
-    protected void load(){
+    public void load(){
 
-        entries = new ArrayList<>();
+        entries = new HashMap<>();
+        checkStatus = new HashMap<>();
+
         try {
             List<String> huntsData = InputOutput.readFile("Resources/data/hunts.dat");
             for (String hunt : huntsData) {
-                entries.add(DataTransformation.getHunt(hunt));
+                Hunt entry = DataTransformation.getHunt(hunt);
+                entries.put(entry.getEntryNum(), entry);
+                checkStatus.put(entry.getEntryNum(), false);
             }
         } catch (FileNotFoundException e) {
             System.err.println("Trouble loading Hunt data");;
@@ -255,7 +296,9 @@ public class App {
         try {
             List<String> esperData = InputOutput.readFile("Resources/data/espers.dat");
             for (String esper : esperData) {
-                entries.add(DataTransformation.getEsper(esper));
+                Esper entry = DataTransformation.getEsper(esper);
+                entries.put(entry.getEntryNum(), entry);
+                checkStatus.put(entry.getEntryNum(), false);
             }
         } catch (FileNotFoundException e) {
             System.err.println("Trouble loading Esper data");
@@ -263,7 +306,9 @@ public class App {
         try {
             List<String> rareGameData = InputOutput.readFile("Resources/data/rareGame.dat");
             for (String rareGame : rareGameData) {
-                entries.add(DataTransformation.getRareGame(rareGame));
+                RareGame entry = DataTransformation.getRareGame(rareGame);
+                entries.put(entry.getEntryNum(), entry);
+                checkStatus.put(entry.getEntryNum(), false);
             }
         } catch (FileNotFoundException e) {
             System.err.println("Trouble reading Rare Game data");
@@ -271,11 +316,14 @@ public class App {
         try {
             List<String> optionalBossData = InputOutput.readFile("Resources/data/optionalBosses.dat");
             for (String boss : optionalBossData) {
-                entries.add(DataTransformation.getOptionalBoss(boss));
+                OptionalBoss entry = DataTransformation.getOptionalBoss(boss);
+                entries.put(entry.getEntryNum(), entry);
+                checkStatus.put(entry.getEntryNum(), false);
             }
         } catch (FileNotFoundException e) {
             System.err.println("Trouble loading Optional Boss data");
         }
+//        Collections.sort(entries, new SortByEntryNum());
     }
 
     private int numSelection(int max) {
@@ -293,18 +341,18 @@ public class App {
     }
 
     private void printLists(int startInd, int endInd, boolean includePhoenix) {
-        for (Checkable entry : entries) {
-            int entryNum = entry.getEntryNum();
+        for (Map.Entry<Integer, Checkable> entry : entries.entrySet()) {
+            int entryNum = entry.getKey();
             if (includePhoenix) {
-                if ( (entryNum >= startInd && entryNum <= endInd) || entryNum == PHOENIX_ENTRY_NUM ) {
+                if ( ((entryNum >= startInd && entryNum <= endInd) || entryNum == PHOENIX_ENTRY_NUM) && !entry.getValue().isCheckedOff() ) {
                     System.out.println(entry);
-                    Results.printBreakLine();
+                    Prompts.printBreakLine();
                 }
 
             } else {
-                if (entryNum >= startInd && entryNum <= endInd && entryNum != PHOENIX_ENTRY_NUM) {
+                if (entryNum >= startInd && entryNum <= endInd && entryNum != PHOENIX_ENTRY_NUM && !entry.getValue().isCheckedOff()) {
                     System.out.println(entry);
-                    Results.printBreakLine();
+                    Prompts.printBreakLine();
                 }
             }
         }
@@ -312,20 +360,20 @@ public class App {
 
     private void searchByTitle(String searchQuery, int startInd, int endInd, boolean includePhoenix) {
         boolean hasResults = false;
-        for (Checkable entry : entries) {
-            int entryNum = entry.getEntryNum();
+        for (Map.Entry<Integer, Checkable> entry : entries.entrySet()) {
+            int entryNum = entry.getKey();
             if (includePhoenix) {
-                if ( ((entryNum >= startInd && entryNum <= endInd) || entryNum == PHOENIX_ENTRY_NUM ) && entry.getTitle().toLowerCase().contains(searchQuery.toLowerCase())) {
+                if ( ( (entryNum >= startInd && entryNum <= endInd) || entryNum == PHOENIX_ENTRY_NUM ) && entry.getValue().getTitle().toLowerCase().contains(searchQuery.toLowerCase() ) && !entry.getValue().isCheckedOff() ) {
                     hasResults = true;
                     System.out.println(entry);
-                    Results.printBreakLine();
+                    Prompts.printBreakLine();
                 }
 
             } else {
-                if (entryNum >= startInd && entryNum <= endInd && entryNum != PHOENIX_ENTRY_NUM && entry.getTitle().toLowerCase().contains(searchQuery.toLowerCase())) {
+                if ( entryNum >= startInd && entryNum <= endInd && entryNum != PHOENIX_ENTRY_NUM && entry.getValue().getTitle().toLowerCase().contains( searchQuery.toLowerCase() ) && !entry.getValue().isCheckedOff() ) {
                     hasResults = true;
                     System.out.println(entry);
-                    Results.printBreakLine();
+                    Prompts.printBreakLine();
                 }
             }
         }
@@ -337,11 +385,11 @@ public class App {
 
     private void searchByTitle(String searchQuery) {
         boolean hasResults = false;
-        for (Checkable entry : entries) {
-            if (entry.getTitle().contains(searchQuery)) {
+        for (Map.Entry<Integer, Checkable> entry : entries.entrySet()) {
+            if (entry.getValue().getTitle().contains(searchQuery)) {
                 hasResults = true;
                 System.out.println(entry);
-                Results.printBreakLine();
+                Prompts.printBreakLine();
             }
         }
         if (!hasResults) {
@@ -351,11 +399,11 @@ public class App {
 
     private void searchByLocation(String search) {
         boolean hasResults = false;
-        for (Checkable entry : entries) {
-            if (entry.getLocation().toLowerCase().contains(search.toLowerCase())) {
+        for (Map.Entry<Integer, Checkable> entry : entries.entrySet()) {
+            if ( entry.getValue().getLocation().toLowerCase().contains( search.toLowerCase() ) && !entry.getValue().isCheckedOff()) {
                 hasResults = true;
                 System.out.println(entry);
-                Results.printBreakLine();
+                Prompts.printBreakLine();
             }
         }
         if (!hasResults) {
@@ -365,17 +413,19 @@ public class App {
 
     private void searchByLevels(int minLevel, int maxLevel) {
         boolean hasResults = false;
-        for (Checkable entry : entries) {
-            if (entry instanceof Enemy && ((Enemy) entry).getLevel() >= minLevel && ((Enemy) entry).getLevel() <= maxLevel) {
+        for (Map.Entry<Integer, Checkable> entry : entries.entrySet()) {
+            if ( entry instanceof Enemy && ((Enemy) entry).getLevel() >= minLevel && ( (Enemy) entry).getLevel() <= maxLevel && !entry.getValue().isCheckedOff()) {
                 hasResults = true;
                 System.out.println(entry);
-                Results.printBreakLine();
+                Prompts.printBreakLine();
             }
         }
         if (!hasResults) {
             System.out.println("Sorry, nothing matches your search");
         }
     }
+
+
 
 
 }

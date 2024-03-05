@@ -19,6 +19,7 @@ public abstract class Enemy implements Checkable {
         this.level = level;
         this.stealItemStr = stealItems;
         this.wiki = wiki;
+        this.checkedOff = false;
     }
     @Override
     public int getEntryNum() {
@@ -60,6 +61,14 @@ public abstract class Enemy implements Checkable {
     @Override
     public void checkOff() {
         checkedOff = true;
+    }
+    @Override
+    public void uncheck() {
+        this.checkedOff = false;
+    }
+    @Override
+    public boolean isCheckedOff() {
+        return checkedOff;
     }
 
     public String getTitle() {
