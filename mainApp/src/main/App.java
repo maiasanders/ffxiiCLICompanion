@@ -75,10 +75,13 @@ public class App {
                                     throw new FileNotFoundException();
                                 } else {
                                     while (file.hasNextLine()) {
-                                        String line = file.nextLine();
-                                        if (line.endsWith("true")) {
-                                            int num = Integer.parseInt(line.substring(0, line.length() - 4));
+                                        String[] line = file.nextLine().split(",");
+                                        int num = Integer.parseInt(line[0]);
+                                        if (line[1].equals("true")) {
                                             checkStatus.put(num, true);
+                                            entries.get(num).checkOff();
+                                        } else {
+                                            checkStatus.put(num, false);
                                         }
                                     }
                                 }
@@ -292,8 +295,23 @@ public class App {
                 // redirect to check off
                 MenuInterfaces.printMenu(MenuInterfaces.getCheckOffMenu());
                 Prompts.printInputPrompt();
-                int checkOffSelect = Integer.parseInt(input());
+                int checkOffSelect = numSelection(3);
                 // enemies
+                if (checkOffSelect == 1) {
+                    MenuInterfaces.printMenu(MenuInterfaces.getEnemiesSubMenu());
+                    int enemySelect = numSelection(4);
+                    if (enemySelect == 1) {
+                        printListsForCheck(ESPER_START_ENTRY_NUM, ESPER_END_ENTRY_NUM, false);
+                    } else if (enemySelect == 2) {
+                        printListsForCheck(RARE_GAME_START_ENTRY_NUM, RARE_GAME_END_ENTRY_NUM, false);
+                    } else if (enemySelect == 3) {
+                        printListsForCheck(HUNT_START_ENTRY_NUM, HUNT_END_ENTRY_NUM, false);
+                    } else if (enemySelect == 4) {
+                        printListsForCheck(BOSS_START_ENTRY_NUM, BOSS_END_ENTRY_NUM, true);
+                    } else {
+                        break;
+                    }
+                }
                 // Misc. side quest
                 // items
 
@@ -392,6 +410,43 @@ public class App {
                     System.out.println(entry);
                     Prompts.printBreakLine();
                 }
+            }
+        }
+    }
+
+    private void printListsForCheck(int startInd, int endInd, boolean includePhoenix) {
+        List<Integer> entryNums = new ArrayList<>();
+        for (Map.Entry<Integer, Checkable> entry : entries.entrySet()) {
+            int entryNum = entry.getKey();
+            if (includePhoenix) {
+                if (((entryNum >= startInd && entryNum <= endInd) || entryNum == PHOENIX_ENTRY_NUM) && !entry.getValue().isCheckedOff()) {
+                    System.out.println(entryNum + ")" + entry);
+                    Prompts.printBreakLine();
+                    entryNums.add(entryNum);
+                }
+
+            } else {
+                if (entryNum >= startInd && entryNum <= endInd && entryNum != PHOENIX_ENTRY_NUM && !entry.getValue().isCheckedOff()) {
+                    System.out.println(entryNum + ")" + entry);
+                    Prompts.printBreakLine();
+                    entryNums.add(entryNum);
+                }
+            }
+        }
+        System.out.println("Please enter the number for the entyr you would like to check: ");
+        int checkSelection;
+        while (true) {
+            try {
+            checkSelection = Integer.parseInt(input());
+                if (entryNums.contains(checkSelection)) {
+                    entries.get(checkSelection).checkOff();
+                    checkStatus.put(checkSelection, true);
+                    break;
+                } else {
+                    throw new InvalidInputException();
+                }
+            } catch (InvalidInputException | NumberFormatException e) {
+                System.err.println("Please put in a valid number");
             }
         }
     }

@@ -38,7 +38,7 @@ public class MenuInterfaces {
             "1. Enemies",
             "2. Miscellaneous Side Quests",
             "3. Items",
-            "4. Return to Main Menu"
+            "0. Return to Main Menu"
     };
 
 
