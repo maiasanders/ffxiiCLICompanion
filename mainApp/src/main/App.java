@@ -24,8 +24,16 @@ public class App {
     File saveDir = new File("Resources/saves");
     private Scanner keyboard = new Scanner(System.in);
 
-    private String input(){
+    private String input() {
         return keyboard.nextLine();
+    }
+
+    public void main(String[] args) {
+//        MainApp app = new MainApp();
+        App app = new App();
+        app.load();
+        File saveFile = app.loadSaveFiles();
+        app.run(saveFile);
     }
 
     public File loadSaveFiles() {
@@ -34,35 +42,50 @@ public class App {
 
             System.out.println(Arrays.toString(saveDir.listFiles()));
 
+
+            while (true) {
             System.out.println("Would you like to start a new save? (Y/N)");
             String newSaveSelect = input();
             File[] saveFiles = saveDir.listFiles();
-
-            while (true){
                 try {
                     if (newSaveSelect.equalsIgnoreCase("N")) {
 
-                            System.out.println("Please input the number of the save you wish to load (use 2 digit number): ");
-                            int fileNum = Integer.parseInt(input());
-                            File selectedFile;
-                            selectedFile = new File("Resources/saves/save" + fileNum + ".csv");
-                            if (selectedFile.exists()) {
-                                try (Scanner file = new Scanner(selectedFile)) {
-                                    if (!file.hasNextLine()) {
-                                        throw new FileNotFoundException();
-                                    } else {
-                                        while (file.hasNextLine()) {
-                                            String line = file.nextLine();
-                                            if (line.endsWith("true")) {
-                                                int num = Integer.parseInt(line.substring(0, line.length() - 4));
-                                                checkStatus.put(num, true);
-                                            }
-                                        }
-                                        return selectedFile;
-                                    }
-                                } catch (FileNotFoundException e) {
-                                    System.err.println("Trouble reading file, try again");
+                        System.out.println("Please input the number of the save you wish to load (use 2 digit number): ");
+                        int fileNum;
+                        while (true){
+                            try {
+                                fileNum = Integer.parseInt(input());
+                                if (fileNum < 1 || fileNum > 99) {
+                                    throw new InvalidInputException();
                                 }
+                                break;
+                            } catch (InvalidInputException | NumberFormatException e) {
+                                System.err.println("Please enter a valid number");
+                            }
+                        }
+                        File selectedFile;
+                        if (fileNum >= 10){
+                            selectedFile = new File("Resources/saves/save" + fileNum + ".dat");
+                        } else {
+                            selectedFile = new File("Resources/saves/save0" + fileNum + ".dat");
+                        }
+                        if (selectedFile.exists()) {
+                            try (Scanner file = new Scanner(selectedFile)) {
+                                if (!file.hasNextLine()) {
+                                    throw new FileNotFoundException();
+                                } else {
+                                    while (file.hasNextLine()) {
+                                        String line = file.nextLine();
+                                        if (line.endsWith("true")) {
+                                            int num = Integer.parseInt(line.substring(0, line.length() - 4));
+                                            checkStatus.put(num, true);
+                                        }
+                                    }
+                                }
+                            } catch (FileNotFoundException e) {
+                                System.err.println("Trouble reading file, try again");
+                            }
+                            return selectedFile;
 
                         }
                     } else if (newSaveSelect.equalsIgnoreCase("Y")) {
@@ -79,17 +102,23 @@ public class App {
             return new File(createNewSave());
         }
     }
+
     String createNewSave() {
         if (saveDir.listFiles() == null || saveDir.listFiles().length == 0) {
-            return "Resources/saves/save01.csv";
+            return "Resources/saves/save01.dat";
         } else {
             File[] saveFiles = saveDir.listFiles();
             assert saveFiles != null;
             String lastFile = saveFiles[saveFiles.length - 1].getName();
             int fileNum = Integer.parseInt(lastFile.substring(4, 6)) + 1;
-            return "Resources/saves/save" + fileNum +".csv";
+            if (fileNum >= 10){
+                return "Resources/saves/save" + fileNum + ".dat";
+            } else {
+                return "Resources/saves/save0" + fileNum + ".dat";
+            }
         }
     }
+
     private void writeSave(String fileName) throws FileNotFoundException {
         List<String> data = new ArrayList<>();
         for (Map.Entry<Integer, Boolean> entry : checkStatus.entrySet()) {
@@ -98,7 +127,7 @@ public class App {
         InputOutput.writeFile(data, fileName, false);
     }
 
-    public void run() {
+    public void run(File saveFile) {
         while (true) {
 
             MenuInterfaces.printMenu(MenuInterfaces.getMainMenu());
@@ -109,25 +138,25 @@ public class App {
             int mainMenuSelect = numSelection(3);
 
             // redirect to lists
-            if (mainMenuSelect == 1){
+            if (mainMenuSelect == 1) {
                 MenuInterfaces.printMenu(MenuInterfaces.getListMenu());
                 Prompts.printInputPrompt();
                 int listsMenuSelect = numSelection(3);
 
                 // enemies
-                if (listsMenuSelect == 1){
+                if (listsMenuSelect == 1) {
                     MenuInterfaces.printMenu(MenuInterfaces.getEnemiesSubMenu());
                     Prompts.printInputPrompt();
                     int enemySubMenuSelect = numSelection(4);
 
                     //Espers
-                    if (enemySubMenuSelect == 1){
+                    if (enemySubMenuSelect == 1) {
 
                         printLists(ESPER_START_ENTRY_NUM, ESPER_END_ENTRY_NUM, false);
                         Prompts.printReturnMainMenu();
                         input();
 
-                    } else if (enemySubMenuSelect == 2){
+                    } else if (enemySubMenuSelect == 2) {
                         // Rare game filter
                         printLists(RARE_GAME_START_ENTRY_NUM, RARE_GAME_END_ENTRY_NUM, false);
                         Prompts.printReturnMainMenu();
@@ -139,53 +168,53 @@ public class App {
                         Prompts.printReturnMainMenu();
                         input();
 
-                    } else if (enemySubMenuSelect == 4){
+                    } else if (enemySubMenuSelect == 4) {
                         // Optional Bosses, includes Phoenix
                         printLists(BOSS_START_ENTRY_NUM, BOSS_END_ENTRY_NUM, true);
                         Prompts.printReturnMainMenu();
                         input();
                     }
 
-                // Misc. side quest
-                } else if (listsMenuSelect == 2){
+                    // Misc. side quest
+                } else if (listsMenuSelect == 2) {
                     // TODO add side quest logic & data
                     Prompts.printUnderConstructionMsg();
                     Prompts.printReturnMainMenu();
                     if (input().isEmpty()) continue;
-                // items
-                } else if (listsMenuSelect == 3){
+                    // items
+                } else if (listsMenuSelect == 3) {
                     Prompts.printUnderConstructionMsg();
                     //TODO add items data & logic
 
                     //unique treasures
                     //ultimate weapons
                     //bazaar
-                        // monographs
-                        // weapons
-                        // other items
+                    // monographs
+                    // weapons
+                    // other items
 
-                } else if (listsMenuSelect == 0){
+                } else if (listsMenuSelect == 0) {
                     continue;
                 }
 
-            // redirect to search
-            } else if (mainMenuSelect == 2){
+                // redirect to search
+            } else if (mainMenuSelect == 2) {
                 MenuInterfaces.printMenu(MenuInterfaces.getSearchMenu());
                 Prompts.printInputPrompt();
                 int searchSelect = numSelection(5);
                 // enemies
-                if (searchSelect == 1){
+                if (searchSelect == 1) {
                     MenuInterfaces.printMenu(MenuInterfaces.getEnemiesSubMenu());
                     Prompts.printInputPrompt();
                     int enemySelect = numSelection(4);
-                    if (enemySelect == 1){
+                    if (enemySelect == 1) {
                         // Espers
                         System.out.println(Prompts.getSearchPrompt());
                         String esperSearched = input();
                         searchByTitle(esperSearched, ESPER_START_ENTRY_NUM, ESPER_END_ENTRY_NUM, false);
                         Prompts.printReturnMainMenu();
                         input();
-                    } else if (enemySelect == 2){
+                    } else if (enemySelect == 2) {
                         // Rare game
                         System.out.println(Prompts.getSearchPrompt());
                         String rgSearched = input();
@@ -193,14 +222,14 @@ public class App {
                         Prompts.printReturnMainMenu();
                         input();
                     } else if (enemySelect == 3) {
-                    // hunts
+                        // hunts
                         System.out.println(Prompts.getSearchPrompt());
                         String huntSearched = input();
                         searchByTitle(huntSearched, HUNT_START_ENTRY_NUM, HUNT_END_ENTRY_NUM, false);
                         Prompts.printReturnMainMenu();
                         input();
                     } else if (enemySelect == 4) {
-                    // optional bosses
+                        // optional bosses
                         System.out.println(Prompts.getSearchPrompt());
                         String bossSearched = input();
                         searchByTitle(bossSearched, BOSS_START_ENTRY_NUM, BOSS_END_ENTRY_NUM, true);
@@ -213,12 +242,12 @@ public class App {
                     //TODO add items search
                     Prompts.printUnderConstructionMsg();
                     // items
-                        //unique treasures
-                        //ultimate weapons
-                        //bazaar
-                            // monographs
-                            // weapons
-                            // other items
+                    //unique treasures
+                    //ultimate weapons
+                    //bazaar
+                    // monographs
+                    // weapons
+                    // other items
 
                 } else if (searchSelect == 4) {
 
@@ -260,8 +289,8 @@ public class App {
                 }
 
             } else if (mainMenuSelect == 3) {
-            // redirect to check off
-               MenuInterfaces.printMenu(MenuInterfaces.getCheckOffMenu());
+                // redirect to check off
+                MenuInterfaces.printMenu(MenuInterfaces.getCheckOffMenu());
                 Prompts.printInputPrompt();
                 int checkOffSelect = Integer.parseInt(input());
                 // enemies
@@ -269,16 +298,24 @@ public class App {
                 // items
 
             } else if (mainMenuSelect == 0) {
-
+                while (true){
+                    try {
+                        writeSave(saveFile.getPath());
+                        break;
+                    } catch (FileNotFoundException e) {
+                        System.err.println("Trouble saving changes, try again? (Y/N)");
+                        String continueSelect = input();
+                        if (continueSelect.equalsIgnoreCase("N")) break;
+                    }
+                }
                 break;
             }
         }
     }
 
 
-
     // Loads data from appropriate files and adds to entries list
-    public void load(){
+    public void load() {
 
         entries = new HashMap<>();
         checkStatus = new HashMap<>();
@@ -291,7 +328,8 @@ public class App {
                 checkStatus.put(entry.getEntryNum(), false);
             }
         } catch (FileNotFoundException e) {
-            System.err.println("Trouble loading Hunt data");;
+            System.err.println("Trouble loading Hunt data");
+            ;
         }
         try {
             List<String> esperData = InputOutput.readFile("Resources/data/espers.dat");
@@ -328,7 +366,7 @@ public class App {
 
     private int numSelection(int max) {
         int selection;
-        while (true){
+        while (true) {
             try {
                 selection = Integer.parseInt(input());
                 if (selection < 0 || selection > max) throw new InvalidInputException();
@@ -344,7 +382,7 @@ public class App {
         for (Map.Entry<Integer, Checkable> entry : entries.entrySet()) {
             int entryNum = entry.getKey();
             if (includePhoenix) {
-                if ( ((entryNum >= startInd && entryNum <= endInd) || entryNum == PHOENIX_ENTRY_NUM) && !entry.getValue().isCheckedOff() ) {
+                if (((entryNum >= startInd && entryNum <= endInd) || entryNum == PHOENIX_ENTRY_NUM) && !entry.getValue().isCheckedOff()) {
                     System.out.println(entry);
                     Prompts.printBreakLine();
                 }
@@ -363,14 +401,14 @@ public class App {
         for (Map.Entry<Integer, Checkable> entry : entries.entrySet()) {
             int entryNum = entry.getKey();
             if (includePhoenix) {
-                if ( ( (entryNum >= startInd && entryNum <= endInd) || entryNum == PHOENIX_ENTRY_NUM ) && entry.getValue().getTitle().toLowerCase().contains(searchQuery.toLowerCase() ) && !entry.getValue().isCheckedOff() ) {
+                if (((entryNum >= startInd && entryNum <= endInd) || entryNum == PHOENIX_ENTRY_NUM) && entry.getValue().getTitle().toLowerCase().contains(searchQuery.toLowerCase()) && !entry.getValue().isCheckedOff()) {
                     hasResults = true;
                     System.out.println(entry);
                     Prompts.printBreakLine();
                 }
 
             } else {
-                if ( entryNum >= startInd && entryNum <= endInd && entryNum != PHOENIX_ENTRY_NUM && entry.getValue().getTitle().toLowerCase().contains( searchQuery.toLowerCase() ) && !entry.getValue().isCheckedOff() ) {
+                if (entryNum >= startInd && entryNum <= endInd && entryNum != PHOENIX_ENTRY_NUM && entry.getValue().getTitle().toLowerCase().contains(searchQuery.toLowerCase()) && !entry.getValue().isCheckedOff()) {
                     hasResults = true;
                     System.out.println(entry);
                     Prompts.printBreakLine();
@@ -400,7 +438,7 @@ public class App {
     private void searchByLocation(String search) {
         boolean hasResults = false;
         for (Map.Entry<Integer, Checkable> entry : entries.entrySet()) {
-            if ( entry.getValue().getLocation().toLowerCase().contains( search.toLowerCase() ) && !entry.getValue().isCheckedOff()) {
+            if (entry.getValue().getLocation().toLowerCase().contains(search.toLowerCase()) && !entry.getValue().isCheckedOff()) {
                 hasResults = true;
                 System.out.println(entry);
                 Prompts.printBreakLine();
@@ -414,7 +452,7 @@ public class App {
     private void searchByLevels(int minLevel, int maxLevel) {
         boolean hasResults = false;
         for (Map.Entry<Integer, Checkable> entry : entries.entrySet()) {
-            if ( entry instanceof Enemy && ((Enemy) entry).getLevel() >= minLevel && ( (Enemy) entry).getLevel() <= maxLevel && !entry.getValue().isCheckedOff()) {
+            if (entry instanceof Enemy && ((Enemy) entry).getLevel() >= minLevel && ((Enemy) entry).getLevel() <= maxLevel && !entry.getValue().isCheckedOff()) {
                 hasResults = true;
                 System.out.println(entry);
                 Prompts.printBreakLine();
@@ -424,8 +462,6 @@ public class App {
             System.out.println("Sorry, nothing matches your search");
         }
     }
-
-
 
 
 }
