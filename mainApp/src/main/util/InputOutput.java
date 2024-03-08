@@ -1,4 +1,4 @@
-package main.entryTypes;
+package main.util;
 
 import main.App;
 

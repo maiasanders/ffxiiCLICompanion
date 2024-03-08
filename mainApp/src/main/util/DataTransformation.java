@@ -1,9 +1,7 @@
 package main.util;
 
-import main.entryTypes.Esper;
-import main.entryTypes.Hunt;
-import main.entryTypes.OptionalBoss;
-import main.entryTypes.RareGame;
+import main.entryTypes.Madhu;
+import main.entryTypes.*;
 
 public class DataTransformation {
     public static Hunt getHunt(String hunt) {
@@ -67,6 +65,50 @@ public class DataTransformation {
                 bossData[6],
                 bossData[7],
                 bossData[8]
+        );
+    }
+
+    public static Madhu getMadhu(String madhu) {
+        String[] madhuData = madhu.split("\\|");
+        return new Madhu(
+                madhuData[2],
+                Integer.parseInt(madhuData[3]),
+                madhuData[4],
+                madhuData[5],
+                madhuData[6]
+
+        );
+    }
+
+    public static SevenSisters getSevenSisters(String trip) {
+        String[] tripData = trip.split("\\|");
+        return new SevenSisters(
+                tripData[2],
+                Integer.parseInt(tripData[3]),
+                tripData[4]
+        );
+    }
+
+    public static Cockatrice getCockatrice(String cockatrice) {
+        String[] cockatriceData = cockatrice.split("\\|");
+        return new Cockatrice(
+                cockatriceData[1],
+                Integer.parseInt(cockatriceData[2]),
+                cockatriceData[3],
+                cockatriceData[4],
+                cockatriceData[5]
+        );
+    }
+
+    public static BottleClue getBottleClue(String bottle) {
+        String[] bottleData = bottle.split("\\|");
+        return new BottleClue(
+                bottleData[1],
+                Integer.parseInt(bottleData[2]),
+                bottleData[3],
+                bottleData[4],
+                bottleData[5],
+                bottleData[6]
         );
     }
 }

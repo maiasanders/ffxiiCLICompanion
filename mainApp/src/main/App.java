@@ -2,6 +2,7 @@ package main;
 
 import main.entryTypes.*;
 import main.util.DataTransformation;
+import main.util.InputOutput;
 import main.util.InvalidInputException;
 
 import java.io.File;
@@ -181,9 +182,10 @@ public class App {
                     // Misc. side quest
                 } else if (listsMenuSelect == 2) {
                     // TODO add side quest logic & data
+                    printLists(1000, 9999, false);
                     Prompts.printUnderConstructionMsg();
                     Prompts.printReturnMainMenu();
-                    if (input().isEmpty()) continue;
+                    input();
                     // items
                 } else if (listsMenuSelect == 3) {
                     Prompts.printUnderConstructionMsg();
@@ -301,16 +303,18 @@ public class App {
                     MenuInterfaces.printMenu(MenuInterfaces.getEnemiesSubMenu());
                     int enemySelect = numSelection(4);
                     if (enemySelect == 1) {
-                        printListsForCheck(ESPER_START_ENTRY_NUM, ESPER_END_ENTRY_NUM, false);
+                        selectItemToCheck(ESPER_START_ENTRY_NUM, ESPER_END_ENTRY_NUM, false);
                     } else if (enemySelect == 2) {
-                        printListsForCheck(RARE_GAME_START_ENTRY_NUM, RARE_GAME_END_ENTRY_NUM, false);
+                        selectItemToCheck(RARE_GAME_START_ENTRY_NUM, RARE_GAME_END_ENTRY_NUM, false);
                     } else if (enemySelect == 3) {
-                        printListsForCheck(HUNT_START_ENTRY_NUM, HUNT_END_ENTRY_NUM, false);
+                        selectItemToCheck(HUNT_START_ENTRY_NUM, HUNT_END_ENTRY_NUM, false);
                     } else if (enemySelect == 4) {
-                        printListsForCheck(BOSS_START_ENTRY_NUM, BOSS_END_ENTRY_NUM, true);
+                        selectItemToCheck(BOSS_START_ENTRY_NUM, BOSS_END_ENTRY_NUM, true);
                     } else {
                         break;
                     }
+                } if (checkOffSelect == 2) {
+                    selectItemToCheck(1000, 9999, false);
                 }
                 // Misc. side quest
                 // items
@@ -342,8 +346,7 @@ public class App {
             List<String> huntsData = InputOutput.readFile("Resources/data/hunts.dat");
             for (String hunt : huntsData) {
                 Hunt entry = DataTransformation.getHunt(hunt);
-                entries.put(entry.getEntryNum(), entry);
-                checkStatus.put(entry.getEntryNum(), false);
+                addEntry(entry);
             }
         } catch (FileNotFoundException e) {
             System.err.println("Trouble loading Hunt data");
@@ -353,8 +356,7 @@ public class App {
             List<String> esperData = InputOutput.readFile("Resources/data/espers.dat");
             for (String esper : esperData) {
                 Esper entry = DataTransformation.getEsper(esper);
-                entries.put(entry.getEntryNum(), entry);
-                checkStatus.put(entry.getEntryNum(), false);
+                addEntry(entry);
             }
         } catch (FileNotFoundException e) {
             System.err.println("Trouble loading Esper data");
@@ -363,8 +365,7 @@ public class App {
             List<String> rareGameData = InputOutput.readFile("Resources/data/rareGame.dat");
             for (String rareGame : rareGameData) {
                 RareGame entry = DataTransformation.getRareGame(rareGame);
-                entries.put(entry.getEntryNum(), entry);
-                checkStatus.put(entry.getEntryNum(), false);
+                addEntry(entry);
             }
         } catch (FileNotFoundException e) {
             System.err.println("Trouble reading Rare Game data");
@@ -373,13 +374,34 @@ public class App {
             List<String> optionalBossData = InputOutput.readFile("Resources/data/optionalBosses.dat");
             for (String boss : optionalBossData) {
                 OptionalBoss entry = DataTransformation.getOptionalBoss(boss);
-                entries.put(entry.getEntryNum(), entry);
-                checkStatus.put(entry.getEntryNum(), false);
+                addEntry(entry);
             }
         } catch (FileNotFoundException e) {
             System.err.println("Trouble loading Optional Boss data");
         }
-//        Collections.sort(entries, new SortByEntryNum());
+        try {
+            List<String> sideQuestData = InputOutput.readFile("Resources/data/sideQuests.dat");
+            for (String sideQuest : sideQuestData) {
+                Checkable entry = null;
+                if (sideQuest.startsWith("madhu")) {
+                    entry = DataTransformation.getMadhu(sideQuest);
+                } else if (sideQuest.startsWith("sevenSisters")) {
+                    entry = DataTransformation.getSevenSisters(sideQuest);
+                } else if (sideQuest.startsWith("cockatrice")) {
+                    entry = DataTransformation.getCockatrice(sideQuest);
+                } else if (sideQuest.startsWith("bottle")) {
+                    entry = DataTransformation.getBottleClue(sideQuest);
+                }
+                if (entry != null) addEntry(entry);
+            }
+        } catch (FileNotFoundException e) {
+            System.err.println("Trouble loading Side Quest data");
+        }
+    }
+
+    private void addEntry(Checkable entry) {
+        entries.put(entry.getEntryNum(), entry);
+        checkStatus.put(entry.getEntryNum(), false);
     }
 
     private int numSelection(int max) {
@@ -401,39 +423,39 @@ public class App {
             int entryNum = entry.getKey();
             if (includePhoenix) {
                 if (((entryNum >= startInd && entryNum <= endInd) || entryNum == PHOENIX_ENTRY_NUM) && !entry.getValue().isCheckedOff()) {
-                    System.out.println(entry);
+                    System.out.println(entry.getValue());
                     Prompts.printBreakLine();
                 }
 
             } else {
                 if (entryNum >= startInd && entryNum <= endInd && entryNum != PHOENIX_ENTRY_NUM && !entry.getValue().isCheckedOff()) {
-                    System.out.println(entry);
+                    System.out.println(entry.getValue());
                     Prompts.printBreakLine();
                 }
             }
         }
     }
 
-    private void printListsForCheck(int startInd, int endInd, boolean includePhoenix) {
+    private void selectItemToCheck(int startInd, int endInd, boolean includePhoenix) {
         List<Integer> entryNums = new ArrayList<>();
         for (Map.Entry<Integer, Checkable> entry : entries.entrySet()) {
             int entryNum = entry.getKey();
             if (includePhoenix) {
                 if (((entryNum >= startInd && entryNum <= endInd) || entryNum == PHOENIX_ENTRY_NUM) && !entry.getValue().isCheckedOff()) {
-                    System.out.println(entryNum + ")" + entry);
+                    System.out.println(entryNum + ") " + entry.getValue());
                     Prompts.printBreakLine();
                     entryNums.add(entryNum);
                 }
 
             } else {
                 if (entryNum >= startInd && entryNum <= endInd && entryNum != PHOENIX_ENTRY_NUM && !entry.getValue().isCheckedOff()) {
-                    System.out.println(entryNum + ")" + entry);
+                    System.out.println(entryNum + ") " + entry.getValue());
                     Prompts.printBreakLine();
                     entryNums.add(entryNum);
                 }
             }
         }
-        System.out.println("Please enter the number for the entyr you would like to check: ");
+        System.out.println("Please enter the number for the entry you would like to check: ");
         int checkSelection;
         while (true) {
             try {
@@ -449,6 +471,8 @@ public class App {
                 System.err.println("Please put in a valid number");
             }
         }
+        // TODO add autosave to end of checking off?
+//        writeSave(saveFileName);
     }
 
     private void searchByTitle(String searchQuery, int startInd, int endInd, boolean includePhoenix) {
@@ -458,14 +482,14 @@ public class App {
             if (includePhoenix) {
                 if (((entryNum >= startInd && entryNum <= endInd) || entryNum == PHOENIX_ENTRY_NUM) && entry.getValue().getTitle().toLowerCase().contains(searchQuery.toLowerCase()) && !entry.getValue().isCheckedOff()) {
                     hasResults = true;
-                    System.out.println(entry);
+                    System.out.println(entry.getValue());
                     Prompts.printBreakLine();
                 }
 
             } else {
                 if (entryNum >= startInd && entryNum <= endInd && entryNum != PHOENIX_ENTRY_NUM && entry.getValue().getTitle().toLowerCase().contains(searchQuery.toLowerCase()) && !entry.getValue().isCheckedOff()) {
                     hasResults = true;
-                    System.out.println(entry);
+                    System.out.println(entry.getValue());
                     Prompts.printBreakLine();
                 }
             }
@@ -481,7 +505,7 @@ public class App {
         for (Map.Entry<Integer, Checkable> entry : entries.entrySet()) {
             if (entry.getValue().getTitle().contains(searchQuery)) {
                 hasResults = true;
-                System.out.println(entry);
+                System.out.println(entry.getValue());
                 Prompts.printBreakLine();
             }
         }
@@ -493,9 +517,9 @@ public class App {
     private void searchByLocation(String search) {
         boolean hasResults = false;
         for (Map.Entry<Integer, Checkable> entry : entries.entrySet()) {
-            if (entry.getValue().getLocation().toLowerCase().contains(search.toLowerCase()) && !entry.getValue().isCheckedOff()) {
+            if (entry.getValue().getLocationMain().toLowerCase().contains(search.toLowerCase()) && !entry.getValue().isCheckedOff()) {
                 hasResults = true;
-                System.out.println(entry);
+                System.out.println(entry.getValue());
                 Prompts.printBreakLine();
             }
         }
@@ -509,7 +533,7 @@ public class App {
         for (Map.Entry<Integer, Checkable> entry : entries.entrySet()) {
             if (entry instanceof Enemy && ((Enemy) entry).getLevel() >= minLevel && ((Enemy) entry).getLevel() <= maxLevel && !entry.getValue().isCheckedOff()) {
                 hasResults = true;
-                System.out.println(entry);
+                System.out.println(entry.getValue());
                 Prompts.printBreakLine();
             }
         }

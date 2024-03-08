@@ -10,7 +10,6 @@ public interface Checkable {
     String getLocationMain();
     int getEntryNum();
     String getTitle();
-    String getLocation();
 
 }
 
