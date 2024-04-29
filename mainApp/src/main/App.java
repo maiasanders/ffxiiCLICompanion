@@ -40,8 +40,11 @@ public class App {
     public File loadSaveFiles() {
         if (saveDir.exists() && saveDir.listFiles().length > 0) {
 
+            System.out.println("Available save files:");
+            for (int i = 0; i < saveDir.listFiles().length; i++) {
+                System.out.println(saveDir.listFiles()[i].getName());
+            }
 
-            System.out.println(Arrays.toString(saveDir.listFiles()));
 
 
             while (true) {
@@ -259,6 +262,7 @@ public class App {
                     System.out.println(Prompts.getSearchPrompt());
                     String locationSearched = input();
                     searchByLocation(locationSearched);
+                    input();
                 } else if (searchSelect == 5) {
                     System.out.println("Please enter the minimum level (1-99)");
                     int minLevel;
@@ -295,29 +299,35 @@ public class App {
 
             } else if (mainMenuSelect == 3) {
                 // redirect to check off
-                MenuInterfaces.printMenu(MenuInterfaces.getCheckOffMenu());
-                Prompts.printInputPrompt();
-                int checkOffSelect = numSelection(3);
-                // enemies
-                if (checkOffSelect == 1) {
-                    MenuInterfaces.printMenu(MenuInterfaces.getEnemiesSubMenu());
-                    int enemySelect = numSelection(4);
-                    if (enemySelect == 1) {
-                        selectItemToCheck(ESPER_START_ENTRY_NUM, ESPER_END_ENTRY_NUM, false);
-                    } else if (enemySelect == 2) {
-                        selectItemToCheck(RARE_GAME_START_ENTRY_NUM, RARE_GAME_END_ENTRY_NUM, false);
-                    } else if (enemySelect == 3) {
-                        selectItemToCheck(HUNT_START_ENTRY_NUM, HUNT_END_ENTRY_NUM, false);
-                    } else if (enemySelect == 4) {
-                        selectItemToCheck(BOSS_START_ENTRY_NUM, BOSS_END_ENTRY_NUM, true);
+
+                while (true) {
+                    MenuInterfaces.printMenu(MenuInterfaces.getCheckOffMenu());
+                    Prompts.printInputPrompt();
+                    int checkOffSelect = numSelection(3);
+                    // enemies
+                    if (checkOffSelect == 1) {
+                        MenuInterfaces.printMenu(MenuInterfaces.getEnemiesSubMenu());
+                        int enemySelect = numSelection(4);
+                        if (enemySelect == 1) {
+                            selectItemToCheck(ESPER_START_ENTRY_NUM, ESPER_END_ENTRY_NUM, false);
+                        } else if (enemySelect == 2) {
+                            selectItemToCheck(RARE_GAME_START_ENTRY_NUM, RARE_GAME_END_ENTRY_NUM, false);
+                        } else if (enemySelect == 3) {
+                            selectItemToCheck(HUNT_START_ENTRY_NUM, HUNT_END_ENTRY_NUM, false);
+                        } else if (enemySelect == 4) {
+                            selectItemToCheck(BOSS_START_ENTRY_NUM, BOSS_END_ENTRY_NUM, true);
+                        } else {
+                            break;
+                        }
+                    }
+                    if (checkOffSelect == 2) {
+                    // Misc. side quest
+                        selectItemToCheck(1000, 9999, false);
                     } else {
                         break;
                     }
-                } if (checkOffSelect == 2) {
-                    selectItemToCheck(1000, 9999, false);
+                    // items
                 }
-                // Misc. side quest
-                // items
 
             } else if (mainMenuSelect == 0) {
                 while (true){
@@ -436,6 +446,7 @@ public class App {
         }
     }
 
+    // TODO rework to accept list of entries?
     private void selectItemToCheck(int startInd, int endInd, boolean includePhoenix) {
         List<Integer> entryNums = new ArrayList<>();
         for (Map.Entry<Integer, Checkable> entry : entries.entrySet()) {
@@ -513,6 +524,7 @@ public class App {
             System.out.println("Sorry, nothing matches your search");
         }
     }
+
 
     private void searchByLocation(String search) {
         boolean hasResults = false;
